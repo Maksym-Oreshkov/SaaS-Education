@@ -1,9 +1,8 @@
 "use client";
 
-import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { subjects } from "@/constants";
+import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -22,11 +21,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Textarea } from "./ui/textarea";
+import { subjects } from "@/constants";
+import { Textarea } from "@/components/ui/textarea";
+import { createCompanion } from "@/lib/actions/companion.actions";
+import { redirect } from "next/navigation";
 
 const formSchema = z.object({
   name: z.string().min(1, { message: "Companion is required." }),
-  subject: z.string().min(1, { message: "Subjects is required." }),
+  subject: z.string().min(1, { message: "Subject is required." }),
   topic: z.string().min(1, { message: "Topic is required." }),
   voice: z.string().min(1, { message: "Voice is required." }),
   style: z.string().min(1, { message: "Style is required." }),
@@ -46,9 +48,17 @@ const CompanionForm = () => {
     },
   });
 
-  const onSubmit = (values: z.infer<typeof formSchema>) => {
-    console.log(values);
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    const companion = await createCompanion(values);
+
+    if (companion) {
+      redirect(`/companions/${companion.id}`);
+    } else {
+      console.log("Failed to create a companion");
+      redirect("/");
+    }
   };
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
@@ -69,7 +79,6 @@ const CompanionForm = () => {
             </FormItem>
           )}
         />
-
         <FormField
           control={form.control}
           name="subject"
@@ -98,12 +107,10 @@ const CompanionForm = () => {
                   </SelectContent>
                 </Select>
               </FormControl>
-
               <FormMessage />
             </FormItem>
           )}
         />
-
         <FormField
           control={form.control}
           name="topic"
@@ -117,7 +124,6 @@ const CompanionForm = () => {
                   className="input"
                 />
               </FormControl>
-
               <FormMessage />
             </FormItem>
           )}
@@ -144,12 +150,10 @@ const CompanionForm = () => {
                   </SelectContent>
                 </Select>
               </FormControl>
-
               <FormMessage />
             </FormItem>
           )}
         />
-
         <FormField
           control={form.control}
           name="style"
@@ -171,7 +175,6 @@ const CompanionForm = () => {
                   </SelectContent>
                 </Select>
               </FormControl>
-
               <FormMessage />
             </FormItem>
           )}
