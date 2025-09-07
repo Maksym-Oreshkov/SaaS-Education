@@ -133,3 +133,19 @@ export const newCompanionPermissions = async () => {
     return true;
   }
 };
+
+export const deleteCompanion = async (id: string) => {
+  const { userId } = await auth();
+  const supabase = createSupabaseClient();
+
+  // Удаляем только свою запись для безопасности
+  const { data, error } = await supabase
+    .from("companions")
+    .delete()
+    .eq("id", id)
+    .eq("author", userId)
+    .select();
+
+  if (error) throw new Error(error.message);
+  return data?.[0];
+};

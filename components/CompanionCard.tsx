@@ -1,5 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
+import { deleteCompanion } from "@/lib/actions/companion.actions";
+import { revalidatePath } from "next/cache";
 
 interface CompanionCardProps {
   id: string;
@@ -8,6 +10,13 @@ interface CompanionCardProps {
   subject: string;
   duration: number;
   color: string;
+}
+export async function removeCompanionAction(id: string) {
+  "use server";
+  await deleteCompanion(id);
+  try {
+    revalidatePath("/companions");
+  } catch {}
 }
 const CompanionCard = ({
   id,
@@ -21,14 +30,16 @@ const CompanionCard = ({
     <article className="companion-card" style={{ backgroundColor: color }}>
       <div className="flex justify-between items-center">
         <div className="subject-badge">{subject}</div>
-        <button className="companion-bookmark">
-          <Image
-            src="/icons/bookmark.svg"
-            alt="bookmark"
-            width={12.5}
-            height={15}
-          />
-        </button>
+        <form action={removeCompanionAction.bind(null, id)}>
+          <button className="companion-bookmark" aria-label="delete companion">
+            <Image
+              src="/icons/bookmark.svg"
+              alt="bookmark"
+              width={12.5}
+              height={15}
+            />
+          </button>
+        </form>
       </div>
       <h2 className="text-2xl font-bold">{name}</h2>
       <p className="text-sm">{topic}</p>

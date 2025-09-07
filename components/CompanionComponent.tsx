@@ -7,6 +7,7 @@ import Image from "next/image";
 import Lottie, { LottieRefCurrentProps } from "lottie-react";
 import soundwaves from "@/constants/soundwaves.json";
 import { addToSessionHistory } from "@/lib/actions/companion.actions";
+import { useRouter } from "next/navigation";
 
 enum CallStatus {
   INACTIVE = "INACTIVE",
@@ -25,6 +26,8 @@ const CompanionComponent = ({
   style,
   voice,
 }: CompanionComponentProps) => {
+  const router = useRouter();
+
   const [callStatus, setCallStatus] = useState<CallStatus>(CallStatus.INACTIVE);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
@@ -80,9 +83,9 @@ const CompanionComponent = ({
   }, []);
 
   const toggleMicrophone = () => {
-    const isMuted = vapi.isMuted();
-    vapi.setMuted(!isMuted);
-    setIsMuted(!isMuted);
+    const muted = vapi.isMuted();
+    vapi.setMuted(!muted);
+    setIsMuted(!muted);
   };
 
   const handleCall = async () => {
@@ -101,6 +104,11 @@ const CompanionComponent = ({
   const handleDisconnect = () => {
     setCallStatus(CallStatus.FINISHED);
     vapi.stop();
+
+    // Можно сохранять в query или sessionStorage
+    sessionStorage.setItem("transcript", JSON.stringify(messages));
+
+    router.push("/session-result");
   };
 
   return (
@@ -116,7 +124,7 @@ const CompanionComponent = ({
                 "absolute transition-opacity duration-1000",
                 callStatus === CallStatus.FINISHED ||
                   callStatus === CallStatus.INACTIVE
-                  ? "opacity-1001"
+                  ? "opacity-100"
                   : "opacity-0",
                 callStatus === CallStatus.CONNECTING &&
                   "opacity-100 animate-pulse"
@@ -199,8 +207,7 @@ const CompanionComponent = ({
             if (message.role === "assistant") {
               return (
                 <p key={index} className="max-sm:text-sm">
-                  {name.split(" ")[0].replace("/[.,]/g, ", "")}:{" "}
-                  {message.content}
+                  {name.split(" ")[0].replace(/[.,]/g, "")}: {message.content}
                 </p>
               );
             } else {
