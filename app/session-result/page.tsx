@@ -33,8 +33,28 @@ export default function SessionResultPage() {
     }
   }, []);
 
-  const handleRepeat = () => {
+  const handleToHome = () => {
     router.push("/");
+  };
+
+  const handleAgain = () => {
+    const saved = sessionStorage.getItem("transcript");
+    if (!saved) {
+      router.push("/");
+      return;
+    }
+
+    try {
+      const parsed = JSON.parse(saved);
+      const id = parsed?.companionId;
+      if (id) {
+        router.push(`/companions/${id}`);
+      } else {
+        router.push("/");
+      }
+    } catch {
+      router.push("/");
+    }
   };
 
   return (
@@ -56,12 +76,20 @@ export default function SessionResultPage() {
             </p>
           ))}
         </div>
-        <button
-          onClick={handleRepeat}
-          className="mt-6 px-4 py-2 bg-primary text-white rounded-lg shrink-0"
-        >
-          To Home
-        </button>
+        <div className="mt-6 flex gap-3">
+          <button
+            onClick={handleAgain}
+            className="px-4 py-2 bg-white border border-primary text-primary rounded-lg cursor-pointer"
+          >
+            Repeat
+          </button>
+          <button
+            onClick={handleToHome}
+            className="px-4 py-2 bg-primary text-white rounded-lg shrink-0 cursor-pointer"
+          >
+            To Home
+          </button>
+        </div>
       </div>
     </section>
   );

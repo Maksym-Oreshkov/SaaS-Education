@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { cn, configureAssistant, getSubjectColor } from "@/lib/utils";
 import { vapi } from "@/lib/vapi.sdk";
 import Image from "next/image";
@@ -88,7 +88,7 @@ const CompanionComponent = ({
     setIsMuted(!muted);
   };
 
-  const handleCall = async () => {
+  const handleCall = useCallback(async () => {
     setCallStatus(CallStatus.CONNECTING);
 
     const assistantOverrides = {
@@ -97,9 +97,9 @@ const CompanionComponent = ({
       serverMessages: [],
     };
 
-    // @ts-expect-error
+    // @ts-expect-error allow vapi.start typing mismatch for now
     vapi.start(configureAssistant(voice, style), assistantOverrides);
-  };
+  }, [subject, topic, style, voice]);
 
   const handleDisconnect = () => {
     setCallStatus(CallStatus.FINISHED);
@@ -109,9 +109,15 @@ const CompanionComponent = ({
     sessionStorage.setItem(
       "transcript",
       JSON.stringify({
+        companionId,
         messages,
         companionName: name,
         userName,
+        // также сохраняем параметры для воспроизведения сессии
+        subject,
+        topic,
+        style,
+        voice,
       })
     );
 
