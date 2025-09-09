@@ -5,12 +5,31 @@ import { useRouter } from "next/navigation";
 
 export default function SessionResultPage() {
   const [messages, setMessages] = useState<SavedMessage[]>([]);
+  const [names, setNames] = useState<{
+    companionName: string;
+    userName: string;
+  }>({ companionName: "Assistant", userName: "User" });
   const router = useRouter();
 
   useEffect(() => {
     const saved = sessionStorage.getItem("transcript");
-    if (saved) {
-      setMessages(JSON.parse(saved));
+    if (!saved) return;
+
+    try {
+      const parsed = JSON.parse(saved);
+
+      if (Array.isArray(parsed)) {
+        // Backward compatibility: old format was just an array of messages
+        setMessages(parsed);
+      } else if (parsed && Array.isArray(parsed.messages)) {
+        setMessages(parsed.messages);
+        setNames({
+          companionName: parsed.companionName || "Assistant",
+          userName: parsed.userName || "User",
+        });
+      }
+    } catch (e) {
+      console.error("Failed to parse transcript from sessionStorage", e);
     }
   }, []);
 
@@ -30,7 +49,10 @@ export default function SessionResultPage() {
                 m.role === "assistant" ? "text-gray-800" : "text-primary"
               }
             >
-              <strong>{m.role}:</strong> {m.content}
+              <strong>
+                {m.role === "assistant" ? names.companionName : names.userName}:
+              </strong>{" "}
+              {m.content}
             </p>
           ))}
         </div>

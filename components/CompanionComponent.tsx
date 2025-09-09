@@ -105,8 +105,15 @@ const CompanionComponent = ({
     setCallStatus(CallStatus.FINISHED);
     vapi.stop();
 
-    // Можно сохранять в query или sessionStorage
-    sessionStorage.setItem("transcript", JSON.stringify(messages));
+    // Сохраняем и сообщения, и имена
+    sessionStorage.setItem(
+      "transcript",
+      JSON.stringify({
+        messages,
+        companionName: name,
+        userName,
+      })
+    );
 
     router.push("/session-result");
   };
